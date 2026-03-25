@@ -1,1 +1,1 @@
-80% parts of this project were created using “vibe coding”
+Many parts of this project were created using “vibe coding”. 
