@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cricket Scorer</title>
+<link href="styles.css" rel="stylesheet">
+</head>
+<body>
+<div class="app">
+
+<div id="setup-screen">
+  <div class="logo">Cricket <span>Scorer</span></div>
+  <div class="tagline">Live Match Scorecard</div>
+
+  <div class="setup-card">
+    <h2><span class="icon">⚙️</span> Match Settings</h2>
+    <div class="form-row triple">
+      <div>
+        <label>Total Overs</label>
+        <input type="number" id="total-overs" value="20" min="1" max="50">
+      </div>
+      <div>
+        <label>Players Per Side</label>
+        <input type="number" id="players-per-side" value="11" min="2" max="11">
+      </div>
+      <div>
+        <label>Toss Won By</label>
+        <select id="toss-winner">
+          <option value="A">Team A</option>
+          <option value="B">Team B</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div>
+        <label>Toss Decision</label>
+        <select id="toss-decision">
+          <option value="bat">Bat First</option>
+          <option value="bowl">Bowl First</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="setup-card">
+    <h2><span class="icon">🏏</span> Team A</h2>
+    <div class="form-row single">
+      <div>
+        <label>Team Name</label>
+        <input type="text" id="team-a-name" placeholder="e.g. Pokhara Avengers" value="Pokhara Avengers">
+      </div>
+    </div>
+    <label>Players (Batting Order)</label>
+    <div class="players-grid" id="team-a-players"></div>
+  </div>
+
+  <div class="setup-card">
+    <h2><span class="icon">🏏</span> Team B</h2>
+    <div class="form-row single">
+      <div>
+        <label>Team Name</label>
+        <input type="text" id="team-b-name" placeholder="e.g. Lumbini Lions" value="Lumbini Lions">
+      </div>
+    </div>
+    <label>Players (Batting Order)</label>
+    <div class="players-grid" id="team-b-players"></div>
+  </div>
+
+  <div class="start-row">
+    <button class="btn btn-primary btn-start" onclick="startMatch()"> Start Match</button>
+  </div>
+</div>
+
+<div id="match-screen">
+
+  <div class="scoreboard" id="scoreboard">
+    <div class="team-block" id="sb-team-a">
+      <div class="team-name-display" id="sb-name-a">—</div>
+      <div class="team-score" id="sb-score-a">— / —</div>
+      <div class="team-overs" id="sb-overs-a"></div>
+      <div class="extras-summary" id="sb-extras-a"></div>
+    </div>
+    <div class="vs-block">
+      <div class="vs-text">VS</div>
+      <div class="innings-badge" id="innings-badge">1st Innings</div>
+    </div>
+    <div class="team-block right" id="sb-team-b">
+      <div class="team-name-display" id="sb-name-b">—</div>
+      <div class="team-score" id="sb-score-b">Yet to bat</div>
+      <div class="team-overs" id="sb-overs-b"></div>
+      <div class="extras-summary" id="sb-extras-b"></div>
+    </div>
+  </div>
+
+  <div class="result-banner hidden" id="result-banner">
+    <h2 id="result-text">Innings Break</h2>
+    <div class="target" id="result-sub"></div>
+    <button class="btn btn-primary" style="margin-top:16px" onclick="startSecondInnings()">Start 2nd Innings →</button>
+  </div>
+
+  <div class="panels">
+    <div class="panel">
+      <div class="panel-header">🏏 Batting — <span id="batting-team-label">—</span></div>
+      <table>
+        <thead><tr><th>Batsman</th><th>R</th><th>B</th><th>4s</th><th>6s</th><th>SR</th></tr></thead>
+        <tbody id="batting-tbody"></tbody>
+      </table>
+    </div>
+    <div class="panel">
+      <div class="panel-header">🎯 Bowling — <span id="bowling-team-label">—</span></div>
+      <table>
+        <thead><tr><th>Bowler</th><th>O</th><th>M</th><th>R</th><th>W</th><th>Eco</th></tr></thead>
+        <tbody id="bowling-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-bottom:16px" id="fow-panel">
+    <div class="panel-header">📋 Fall of Wickets</div>
+    <div style="padding:10px 16px; font-size:0.8rem; color:var(--muted); font-family:'DM Mono',monospace;" id="fow-list">—</div>
+  </div>
+
+  <div class="scoring-area">
+    <div class="scoring-title">SCORING — <span id="current-over-label">Over 1</span></div>
+
+    <div class="over-info">
+      <div>This over: <span id="this-over-runs">0</span> runs</div>
+      <div>Bowler: <span id="current-bowler-name">—</span></div>
+    </div>
+
+    <div class="balls-row" id="balls-row"></div>
+
+    <div class="run-btns">
+      <button class="run-btn r0" onclick="addBall(0)">0</button>
+      <button class="run-btn r1" onclick="addBall(1)">1</button>
+      <button class="run-btn r2" onclick="addBall(2)">2</button>
+      <button class="run-btn r3" onclick="addBall(3)">3</button>
+      <button class="run-btn r4" onclick="addBall(4)">4</button>
+      <button class="run-btn r5" onclick="addBall(5)">5</button>
+      <button class="run-btn r6" onclick="addBall(6)">6</button>
+      <button class="run-btn r-W" onclick="addBall('W')">WICKET</button>
+    </div>
+
+    <div class="extras-row">
+      <button class="extra-btn" onclick="addExtra('Wd')">Wide (+1)</button>
+      <button class="extra-btn" onclick="addExtra('Nb')">No Ball (+1)</button>
+      <button class="extra-btn" onclick="addExtra('Lb')">Leg Bye</button>
+      <button class="extra-btn" onclick="addExtra('B')">Bye</button>
+    </div>
+
+    <div class="controls-row">
+      <button class="btn btn-secondary" onclick="undoLast()">↩ Undo</button>
+      <button class="btn btn-secondary btn-sm" onclick="changeBowler()">Change Bowler</button>
+    </div>
+  </div>
+
+</div>
+
+
+<div class="over-flash" id="over-flash"></div>
+
+<div class="overlay hidden" id="new-batsman-overlay">
+  <div class="modal">
+    <h3>🏏 Next Batsman</h3>
+    <p id="next-batsman-reason">A wicket has fallen. Select the next batsman.</p>
+    <div class="player-select-list" id="next-batsman-list"></div>
+    <button class="btn btn-primary" style="width:100%" onclick="confirmBatsman()">Send In</button>
+  </div>
+</div>
+
+<div class="overlay hidden" id="new-bowler-overlay">
+  <div class="modal">
+    <h3>🎯 Select Bowler</h3>
+    <p id="bowler-reason">Select the bowler for this over.</p>
+    <div class="player-select-list" id="next-bowler-list"></div>
+    <button class="btn btn-primary" style="width:100%" onclick="confirmBowler()">Bowl</button>
+  </div>
+</div>
+
+<div class="overlay hidden" id="opening-overlay">
+  <div class="modal">
+    <h3>🏏 Opening Batsmen</h3>
+    <p>Select 2 openers. First selected = on strike.</p>
+    <div class="player-select-list" id="opener-list"></div>
+    <button class="btn btn-primary" style="width:100%;margin-top:4px" onclick="confirmOpeners()">Confirm Openers</button>
+  </div>
+</div>
+
+<div class="overlay hidden" id="result-overlay">
+  <div class="modal" style="text-align:center">
+    <h3 id="final-winner" style="font-size:2rem;color:var(--amber)">—</h3>
+    <p id="final-detail" style="font-size:1rem;color:var(--text);margin-top:8px;margin-bottom:24px"></p>
+    <div id="final-scorecard" style="text-align:left;font-size:0.82rem;margin-bottom:20px"></div>
+    <button class="btn btn-primary" style="width:100%" onclick="location.reload()">New Match</button>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
